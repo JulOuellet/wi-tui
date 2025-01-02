@@ -2,10 +2,7 @@ use std::{io::{stdout, Result}, time::Duration};
 
 use crossterm::{event::{self, Event}, terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen}, ExecutableCommand};
 use ratatui::{
-    layout::Alignment, 
-    backend::CrosstermBackend, 
-    widgets::Paragraph, 
-    Terminal
+    backend::CrosstermBackend, layout::Alignment, style::{Modifier, Style}, widgets::{Block, BorderType, Borders, Paragraph}, Terminal
 };
 use wi_tui::app::App;
 
@@ -22,8 +19,14 @@ fn main() -> Result<()> {
         terminal.draw(|frame| {
             let area = frame.area();
             frame.render_widget(
-                Paragraph::new("Hello World!")
-                    .alignment(Alignment::Center),
+                Paragraph::new("")
+                    .alignment(Alignment::Center)
+                    .block(Block::default()
+                        .title(" Wi-Tui ")
+                        .title_alignment(Alignment::Center)
+                        .borders(Borders::ALL)
+                        .style(Style::default().add_modifier(Modifier::BOLD))
+                        .border_type(BorderType::Rounded)),
                 area
             );
         })?;

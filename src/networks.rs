@@ -1,4 +1,4 @@
-use std::{collections::HashMap, process::Command};
+use std::{collections::HashMap, net, process::Command};
 
 #[derive(Clone, Debug)]
 pub struct Network {
@@ -9,7 +9,27 @@ pub struct Network {
     pub bars: String
 }
 
-pub fn get_networks() -> Vec<Network> {
+impl Network {
+
+    fn from_nmcli_line(line: &str) -> Option<Network> {
+        let fields: Vec<&str> = line.split(':').collect();
+
+        if fields.len() < 5 || fields[0].is_empty() {
+            return None;
+        }
+
+        Some(Network {
+            ssid:     fields[0].to_string(),
+            signal:   fields[1].to_string(),
+            security: fields[2].to_string(),
+            rate:     fields[3].to_string(),
+            bars:     fields[4].to_string()
+        })
+    }
+
+}
+
+pub fn get_networks() -> Result<Vec<Network>, String> {
     let output = Command::new("nmcli")
         .args(["-t", "-f", "SSID,SIGNAL,SECURITY,RATE,BARS", "device", "wifi", "list"])
         .output()
@@ -17,36 +37,18 @@ pub fn get_networks() -> Vec<Network> {
 
     let mut networks_map = HashMap::new();
 
-    String::from_utf8_lossy(&output.stdout)
-        .lines()
-        .filter_map(|line| {
-            let fields: Vec<&str> = line.split(':').collect();
-
-            if fields.len() >= 5 && !fields[0].is_empty() {
-                Some(
-                        Network {
-                            ssid:     fields[0].to_string(),
-                            signal:   fields[1].to_string(),
-                            security: fields[2].to_string(),
-                            rate:     fields[3].to_string(),
-                            bars:     fields[4].to_string()
-                        }
-                )
-            } else {
-                None
-            }
-        })
-        .for_each(|network| {
+    for line in String::from_utf8_lossy(&output.stdout).lines() {
+        if let Some(network) = Network::from_nmcli_line(line) {
             networks_map
                 .entry(network.ssid.clone())
                 .and_modify(|existing: &mut Network| {
-                    if network.signal.parse::<i32>().unwrap_or(0) > 
-                       existing.signal.parse::<i32>().unwrap_or(0) {
+                    if network.signal > existing.signal {
                         *existing = network.clone();
                     }
                 })
-                .or_insert(network);
-        });
+            .or_insert(network);
+            }
+    }
 
-        networks_map.into_values().collect()
+    Ok(networks_map.into_values().collect())
 }

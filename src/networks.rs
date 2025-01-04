@@ -1,4 +1,4 @@
-use std::{collections::HashMap, net, process::Command};
+use std::{collections::HashMap, process::Command};
 
 #[derive(Clone, Debug)]
 pub struct Network {
@@ -52,3 +52,4 @@ pub fn get_networks() -> Result<Vec<Network>, String> {
 
     Ok(networks_map.into_values().collect())
 }
+

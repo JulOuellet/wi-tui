@@ -16,43 +16,27 @@ use crossterm::{
 
 use ratatui::{
     backend::CrosstermBackend, 
-    layout::Alignment, 
-    style::{Modifier, Style}, 
-    widgets::{Block, BorderType, Borders, Paragraph}, 
     Terminal
 };
 
-use wi_tui::app::App;
+use wi_tui::{app::App, ui::draw_ui};
 
 fn main() -> Result<()> {
+
+    let mut app = App::new();
 
     enable_raw_mode()?;
     stdout().execute(EnterAlternateScreen)?;
     let backend = CrosstermBackend::new(stdout());
     let mut terminal = Terminal::new(backend)?;
-
-    let mut app = App::new();
+    
+    app.refresh_networks();
 
     while app.running {
-        terminal.draw(|frame| {
-            let area = frame.area();
-            frame.render_widget(
-                Paragraph::new("")
-                .alignment(Alignment::Center)
-                .block(Block::default()
-                    .title(" Wi-Tui ")
-                    .title_alignment(Alignment::Center)
-                    .borders(Borders::ALL)
-                    .style(Style::default().add_modifier(Modifier::BOLD))
-                    .border_type(BorderType::Rounded)),
-                    area
-            );
-        })?;
+        terminal.draw(|frame| draw_ui(frame, &app))?;
 
         if event::poll(Duration::from_millis(250))? {
-            if let Event::Key(key) = event::read()? {
-                app.on_key(key.code);
-            }
+            app.handle_event()?;
         }
     }
 

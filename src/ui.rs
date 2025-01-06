@@ -3,7 +3,7 @@ use ratatui::{
     layout::{Constraint, Layout, Rect}, 
     style::{Modifier, Style, Stylize}, 
     text::Line, 
-    widgets::{Block, BorderType, Borders, List, ListItem, Paragraph, Widget} 
+    widgets::{Block, BorderType, Borders, List, ListItem, Padding, Paragraph, Widget} 
 };
 
 use crate::app::App;
@@ -71,7 +71,8 @@ impl App {
                 .title(" Available Networks ")
                 .bold()
                 .borders(Borders::ALL)
-                .border_type(BorderType::Rounded))
+                .border_type(BorderType::Rounded)
+                .padding(Padding::new(3, 3, 1, 1)))
             .highlight_style(Style::default().add_modifier(Modifier::ITALIC));
 
         list.render(area, buf);

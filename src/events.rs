@@ -17,7 +17,6 @@ impl App {
         Ok(())
     }
 
-
     pub fn handle_key(&mut self, key: KeyEvent) {
         if key.kind != KeyEventKind::Press {
             return;

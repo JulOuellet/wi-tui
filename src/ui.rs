@@ -1,64 +1,74 @@
 use ratatui::{
     buffer::Buffer, 
-    layout::{Constraint, Direction, Layout, Rect}, 
+    layout::{Constraint, Layout, Rect}, 
     style::{Modifier, Style, Stylize}, 
-    widgets::{Block, Borders, List, ListItem, Paragraph, Widget}, 
+    text::Line, 
+    widgets::{Block, BorderType, Borders, List, ListItem, Paragraph, Widget} 
 };
 
 use crate::app::App;
 
 impl Widget for &mut App {
-    
+
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let chunks = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints([
-                Constraint::Length(3),
-                Constraint::Min(0),
-            ])
-            .split(area);
+        let [header_area, body_area] = Layout::vertical([
+            Constraint::Length(6),
+            Constraint::Fill(1),
+        ])
+        .areas(area);
 
-        // Render the title block
-        App::render_header(chunks[0], buf);
-
-        // Render the list block
-        self.render_network_list(chunks[1], buf);
+        App::render_header(header_area, buf);
+        App::render_network_list(&mut *self, body_area, buf);
     }
-    
-}
 
+}
 
 impl App {
 
     fn render_header(area: Rect, buf: &mut Buffer) {
-        Paragraph::new("Wi-Tui")
-            .bold()
-            .centered()
+        let title_art = vec![
+            Line::raw(" __      __.___        _______________ ___.___ "),
+            Line::raw("/  \\    /  \\   |       \\__    ___/    |   \\   |"),
+            Line::raw("\\   \\/\\/   /   |  ______ |    |  |    |   /   |"),
+            Line::raw(" \\        /|   | /_____/ |    |  |    |  /|   |"),
+            Line::raw("  \\__/\\  / |___|         |____|  |______/ |___|"),
+            Line::raw("       \\/                                      "),
+        ];
+
+        let title: Vec<Line> = title_art
+            .iter()
+            .map(|line| line
+                .clone().style(Style::default().bold().fg(ratatui::style::Color::Cyan)))
+            .collect();
+
+        Paragraph::new(title)
+            .alignment(ratatui::layout::Alignment::Center)
             .render(area, buf);
     }
 
     pub fn render_network_list(&self, area: Rect, buf: &mut Buffer) {
-        let items: Vec<ListItem> = self
+        let list_items: Vec<ListItem> = self
             .networks
             .iter()
             .map(|network| {
                 ListItem::new(format!(
-                    "{} | Signal: {} | Security: {}",
-                    network.ssid, network.signal, network.security
+                        "{} | Signal: {} | Security: {}",
+                        network.ssid, network.signal, network.security
                 ))
             })
-            .collect();
+        .collect();
 
-        let list = List::new(items)
+        let list = List::new(list_items)
             .block(
                 Block::default()
-                    .title("Available Networks")
-                    .borders(Borders::ALL),
-            )
+                .title(" Available Networks ")
+                .bold()
+                .borders(Borders::ALL)
+                .border_type(BorderType::Rounded))
             .highlight_style(Style::default().add_modifier(Modifier::ITALIC));
 
         list.render(area, buf);
     }
-}
 
+}
 

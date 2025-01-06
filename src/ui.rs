@@ -50,13 +50,20 @@ impl App {
         let list_items: Vec<ListItem> = self
             .networks
             .iter()
-            .map(|network| {
-                ListItem::new(format!(
+            .enumerate()
+            .map(|(i, network)| {
+                let mut item = ListItem::new(format!(
                         "{} | Signal: {} | Security: {}",
                         network.ssid, network.signal, network.security
-                ))
+                ));
+
+                if i == self.selected_index {
+                    item = item.style(Style::default().add_modifier(Modifier::REVERSED));
+                }
+
+                item
             })
-        .collect();
+            .collect();
 
         let list = List::new(list_items)
             .block(

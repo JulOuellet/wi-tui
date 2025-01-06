@@ -26,6 +26,8 @@ impl App {
         match key.code {
             KeyCode::Char('q') => self.running = false,
             KeyCode::Char('r') => self.refresh_networks(),
+            KeyCode::Up | KeyCode::Char('k') => self.move_selection_up(),
+            KeyCode::Down | KeyCode::Char('j') => self.move_selection_down(),
             _ => {}
         }
     }

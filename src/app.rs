@@ -19,10 +19,6 @@ use ratatui::{
 };
 
 use crate::networks::{get_networks, Network};
-use crate::ui::draw_ui;
-
-
-
 
 pub struct App {
     pub running: bool,
@@ -47,7 +43,7 @@ impl App {
         let mut terminal = Terminal::new(backend)?;
 
         loop {
-            terminal.draw(|frame| draw_ui(frame, &self))?;
+            terminal.draw(|frame| frame.render_widget(&mut *self, frame.area()))?;
 
             if event::poll(Duration::from_millis(250))? {
                 self.handle_event()?;

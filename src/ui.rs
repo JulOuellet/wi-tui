@@ -15,10 +15,10 @@ impl Widget for &mut App {
             Constraint::Length(6),
             Constraint::Fill(1),
         ])
-        .areas(area);
+            .areas(area);
 
         App::render_header(header_area, buf);
-        App::render_network_list(&mut *self, body_area, buf);
+        App::render_body(&mut *self, body_area, buf);
     }
 
 }
@@ -46,15 +46,42 @@ impl App {
             .render(area, buf);
     }
 
-    pub fn render_network_list(&self, area: Rect, buf: &mut Buffer) {
-        let list_items: Vec<ListItem> = self
+    fn render_body(&self, area: Rect, buf: &mut Buffer) {
+        let (ssid_width, signal_width, security_width, rate_width, bars_width) =
+            self.calculate_column_widths();
+
+        let header = ListItem::new(format!(
+                "{:<width_ssid$} | {:<width_signal$} | {:<width_security$} | {:<width_rate$} | {:<width_bars$}",
+                "SSID",
+                "Signal",
+                "Security",
+                "Rate",
+                "Bars",
+                width_ssid = ssid_width,
+                width_signal = signal_width,
+                width_security = security_width,
+                width_rate = rate_width,
+                width_bars = bars_width
+        ))
+            .style(Style::default().bold().fg(ratatui::style::Color::Cyan));
+
+        let network_items: Vec<ListItem> = self
             .networks
             .iter()
             .enumerate()
             .map(|(i, network)| {
                 let mut item = ListItem::new(format!(
-                        "{} | Signal: {} | Security: {}",
-                        network.ssid, network.signal, network.security
+                        "{:<width_ssid$} | {:<width_signal$} | {:<width_security$} | {:<width_rate$} | {:<width_bars$}",
+                        network.ssid,
+                        network.signal,
+                        network.security,
+                        network.rate,
+                        network.bars,
+                        width_ssid = ssid_width,
+                        width_signal = signal_width,
+                        width_security = security_width,
+                        width_rate = rate_width,
+                        width_bars = bars_width
                 ));
 
                 if i == self.selected_index {
@@ -63,7 +90,11 @@ impl App {
 
                 item
             })
-            .collect();
+        .collect();
+
+        let mut list_items = Vec::with_capacity(network_items.len() + 1);
+        list_items.push(header);
+        list_items.extend(network_items);
 
         let list = List::new(list_items)
             .block(
@@ -72,11 +103,29 @@ impl App {
                 .bold()
                 .borders(Borders::ALL)
                 .border_type(BorderType::Rounded)
-                .padding(Padding::new(3, 3, 1, 1)))
+                .padding(Padding::new(3, 3, 1, 1)),
+            )
             .highlight_style(Style::default().add_modifier(Modifier::ITALIC));
 
         list.render(area, buf);
     }
 
-}
+    fn calculate_column_widths(&self) -> (usize, usize, usize, usize, usize) {
+        let mut ssid_width = "SSID".len();
+        let mut signal_width = "Signal".len();
+        let mut security_width = "Security".len();
+        let mut rate_width = "Rate".len();
+        let mut bars_width = "Bars".len();
 
+        for network in &self.networks {
+            ssid_width = ssid_width.max(network.ssid.len());
+            signal_width = signal_width.max(network.signal.len());
+            security_width = security_width.max(network.security.len());
+            rate_width = rate_width.max(network.rate.len());
+            bars_width = bars_width.max(network.bars.len());
+        }
+
+        (ssid_width, signal_width, security_width, rate_width, bars_width)
+    }
+
+}

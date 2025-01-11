@@ -46,7 +46,10 @@ impl App {
             .render(area, buf);
     }
 
-    fn render_body(&self, area: Rect, buf: &mut Buffer) {
+    fn render_body(&mut self, area: Rect, buf: &mut Buffer) {
+        let start = self.scroll_offset;
+        let end = (start + self.visible_items).min(self.networks.len());
+
         let (ssid_width, signal_width, security_width, rate_width, bars_width) =
             self.calculate_column_widths();
 
@@ -65,11 +68,11 @@ impl App {
         ))
             .style(Style::default().bold().fg(ratatui::style::Color::Cyan));
 
-        let network_items: Vec<ListItem> = self
-            .networks
+        let network_items: Vec<ListItem> = self.networks[start..end]
             .iter()
             .enumerate()
             .map(|(i, network)| {
+                let index = start + i;
                 let mut item = ListItem::new(format!(
                         "{:<width_ssid$} | {:<width_signal$} | {:<width_security$} | {:<width_rate$} | {:<width_bars$}",
                         network.ssid,
@@ -84,7 +87,7 @@ impl App {
                         width_bars = bars_width
                 ));
 
-                if i == self.selected_index {
+                if index == self.selected_index {
                     item = item.style(Style::default().add_modifier(Modifier::REVERSED));
                 }
 

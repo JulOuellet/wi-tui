@@ -23,7 +23,10 @@ use crate::networks::{get_networks, Network};
 pub struct App {
     pub running: bool,
     pub networks: Vec<Network>,
-    pub selected_index: usize
+    pub selected_index: usize,
+    pub scroll_offset: usize,
+    pub visible_items: usize,
+    pub items_list_offset: u16
 }
 
 impl App {
@@ -32,7 +35,10 @@ impl App {
         App {
             running: true,
             networks: vec![],
-            selected_index: 0
+            selected_index: 0,
+            scroll_offset: 0,
+            visible_items: 0,
+            items_list_offset: 11
         }
     }
 
@@ -45,6 +51,9 @@ impl App {
         let mut terminal = Terminal::new(backend)?;
 
         loop {
+            let terminal_size = terminal.size()?;
+            self.visible_items = terminal_size.height.saturating_sub(self.items_list_offset) as usize;
+
             terminal.draw(|frame| frame.render_widget(&mut *self, frame.area()))?;
 
             if event::poll(Duration::from_millis(250))? {
@@ -75,12 +84,20 @@ impl App {
     pub fn move_selection_up(&mut self) {
         if self.selected_index > 0 {
             self.selected_index -= 1;
+            
+            if self.selected_index < self.scroll_offset {
+                self.scroll_offset = self.selected_index;
+            }
         }
     }
 
     pub fn move_selection_down(&mut self) {
         if self.selected_index < self.networks.len().saturating_sub(1) {
             self.selected_index += 1;
+        }
+
+        if self.selected_index >= self.scroll_offset + self.visible_items {
+            self.scroll_offset = self.selected_index + 1 - self.visible_items;
         }
     }
 }

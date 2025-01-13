@@ -21,12 +21,12 @@ use ratatui::{
 use crate::networks::{get_networks, Network};
 
 pub struct App {
-    pub running: bool,
-    pub networks: Vec<Network>,
-    pub selected_index: usize,
-    pub scroll_offset: usize,
-    pub visible_items: usize,
-    pub items_list_offset: u16
+    pub running: bool,          // state of the application
+    pub networks: Vec<Network>, // list of networks
+    pub selected_index: usize,  // index of the selected network in the list
+    pub scroll_offset: usize,   // offset for scrolling the list of networks
+    pub visible_items: usize,   // number of visible list items in the terminal
+    pub items_list_offset: u16, // magic number, offset at which the list of items starts
 }
 
 impl App {
@@ -38,7 +38,7 @@ impl App {
             selected_index: 0,
             scroll_offset: 0,
             visible_items: 0,
-            items_list_offset: 11
+            items_list_offset: 11,
         }
     }
 

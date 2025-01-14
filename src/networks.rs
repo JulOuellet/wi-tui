@@ -37,25 +37,7 @@ pub fn get_networks() -> Result<Vec<Network>, String> {
         .output()
         .expect("Failed to execute nmcli");
 
-    let active_output = Command::new("nmcli")
-        .args(["-t", "-f", "SSID,ACTIVE", "device", "wifi"])
-        .output()
-        .expect("Failed to execute nmcli for active connection");
-
-    let active_ssid = String::from_utf8_lossy(&active_output.stdout)
-    .lines()
-    .find_map(|line| {
-        if line.ends_with(":yes") {
-            line.strip_suffix(":yes").map(|ssid| ssid.to_string())
-        } else {
-            None
-        }
-    })
-    .unwrap_or_else(|| {
-        eprintln!("No active SSID found.");
-        String::new()
-    });
-
+    let active_ssid = get_active_ssid();
     let mut networks_map = HashMap::new();
 
     for line in String::from_utf8_lossy(&output.stdout).lines() {
@@ -71,5 +53,27 @@ pub fn get_networks() -> Result<Vec<Network>, String> {
         }
     }
     Ok(networks_map.into_values().collect())
+}
+
+
+fn get_active_ssid() -> String {
+    let output = Command::new("nmcli")
+        .args(["-t", "-f", "SSID,ACTIVE", "device", "wifi"])
+        .output()
+        .expect("Failed to execute nmcli for active connection");
+
+    String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .find_map(|line| {
+            if line.ends_with(":yes") {
+                line.strip_suffix(":yes").map(|ssid| ssid.to_string())
+            } else {
+                None
+            }
+        })
+        .unwrap_or_else(|| {
+            eprintln!("No active SSID found.");
+            String::new()
+        })
 }
 

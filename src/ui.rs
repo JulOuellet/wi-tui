@@ -76,7 +76,7 @@ impl App {
 
                 // If network is connected, append the end of the line (bars) with a star
                 let appended_bars = if network.is_connected {
-                    format!("{} ★", network.bars)
+                    format!("{}  ★", network.bars)
                 } else {
                     network.bars.clone()
                 };
@@ -92,7 +92,7 @@ impl App {
                         width_signal = signal_width,
                         width_security = security_width,
                         width_rate = rate_width,
-                        width_bars = bars_width + 2
+                        width_bars = bars_width + 3
                 ));
 
                 if index == self.selected_index {

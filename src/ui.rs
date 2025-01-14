@@ -73,18 +73,26 @@ impl App {
             .enumerate()
             .map(|(i, network)| {
                 let index = start + i;
+
+                // If network is connected, append the end of the line (bars) with a star
+                let appended_bars = if network.is_connected {
+                    format!("{} ★", network.bars)
+                } else {
+                    network.bars.clone()
+                };
+
                 let mut item = ListItem::new(format!(
                         "{:<width_ssid$} | {:<width_signal$} | {:<width_security$} | {:<width_rate$} | {:<width_bars$}",
                         network.ssid,
                         network.signal,
                         network.security,
                         network.rate,
-                        network.bars,
+                        appended_bars,
                         width_ssid = ssid_width,
                         width_signal = signal_width,
                         width_security = security_width,
                         width_rate = rate_width,
-                        width_bars = bars_width
+                        width_bars = bars_width + 2
                 ));
 
                 if index == self.selected_index {
